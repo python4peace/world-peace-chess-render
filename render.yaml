@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: world-peace-chess
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: HOST_CODE
+        sync: false
+      - key: STOCKFISH_PATH
+        value: /usr/games/stockfish
+      - key: THINK_SECONDS
+        value: "3"
+      - key: ENGINE_HASH_MB
+        value: "32"

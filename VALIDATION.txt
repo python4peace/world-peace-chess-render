@@ -1,0 +1,6 @@
+Validation performed during package generation:
+- All included Python files compiled successfully.
+- 10 standalone clock tests passed.
+- JavaScript syntax check: passed.
+- No Docker build, package installation, Flask integration test, real Stockfish search, Render deployment, external multiplayer test or TikTok broadcast was performed.
+Run the README acceptance checklist before live use.
