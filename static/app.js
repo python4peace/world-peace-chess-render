@@ -19,7 +19,7 @@ async function api(path,method='GET',body){
  if(!response.ok)throw Error(d.error||'Request failed');return d;
 }
 function buildLinks(){const box=$('links');box.innerHTML='';if(!rid||watching)return;const base=location.origin+'/room/'+rid,items=[];
- if(invite&&state&&state.role==='w')items.push(['Private opponent invitation — send only to your opponent',base+'#join='+invite]);
+ if(invite&&state&&state.is_host)items.push(['Private player invitation — send only to your opponent',base+'#join='+invite]);
  items.push(['Public spectator link — safe for viewers',base+'?watch=1']);
  for(const [label,url] of items){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.readOnly=true;input.value=url;input.onclick=()=>input.select();const b=document.createElement('button');b.textContent='Copy link';b.onclick=async()=>{try{await navigator.clipboard.writeText(url);b.textContent='Copied';}catch(e){input.focus();input.select();$('notice').textContent='Select and copy the link manually.';}};box.append(l,input,b);}
 }
@@ -35,7 +35,7 @@ function accept(s){
  $('start').hidden=watching||!(['ai','selfplay'].includes(s.mode)&&s.phase==='waiting'&&s.role==='w');
  $('stopSelfplay').hidden=watching||!(s.mode==='selfplay'&&s.phase==='playing'&&s.role==='w');
  $('start').textContent=s.mode==='selfplay'?'Start automatic self-play':'Start clock';
- $('cancel').hidden=watching||!(s.phase==='waiting'&&s.role==='w');
+ $('cancel').hidden=watching||!(s.phase==='waiting'&&s.is_host);
  $('join').hidden=watching||!(joinToken&&s.mode==='friend'&&s.role!=='w'&&s.role!=='b'&&s.phase!=='ended');
  $('spectate').disabled=false;$('pgn').hidden=false;$('pgn').href='/api/room/'+rid+'/pgn';
  const rows=[];for(let i=0;i<s.moves.length;i+=2)rows.push((i/2+1)+'. '+s.moves[i]+' '+(s.moves[i+1]||''));$('moves').textContent=rows.join('   ');
@@ -90,7 +90,7 @@ $('create').onclick=async()=>{
  if(state&&state.phase!=='ended'&&!confirm('The old game will remain open and its clock may continue. Create another game?'))return;
  busy=true;
  try{
-  const d=await api('/api/new','POST',{host_code:$('hostCode').value,mode:$('mode').value,control:$('control').value});
+  const d=await api('/api/new','POST',{host_code:$('hostCode').value,mode:$('mode').value,control:$('control').value,color:$('hostColor').value});
   rid=d.room;token=d.token;invite=d.invite;joinToken='';state=null;saveSeat();history.pushState(null,'','/room/'+rid);
   $('hostCode').value='';accept(await api('/api/room/'+rid));$('notice').textContent='';
  }catch(e){$('notice').textContent=e.message;}finally{busy=false;}
@@ -109,3 +109,6 @@ if(typeof Chess==='undefined'){$('status').textContent='Chess library failed to 
 else{game=new Chess();drawBoard();if(rid)poll();else{$('status').textContent='Enter your private host code, choose an opponent and create a game.';api('/api/status').then(s=>{if(!s.engine_ready)$('notice').textContent='Stockfish is unavailable; friend games still work. Check Render logs.';}).catch(e=>$('notice').textContent=e.message);}
  setInterval(poll,750);setInterval(clocks,100);
 }
+
+function wpcColorChoice(){document.getElementById('hostColor').disabled=document.getElementById('mode').value!=='friend';}
+document.getElementById('mode').addEventListener('change',wpcColorChoice);wpcColorChoice();
