@@ -133,7 +133,7 @@ def index(rid=None):return render_template('index.html')
 def health():return jsonify(status='ok',engine_ready=engine_ok)
 
 @app.get('/api/status')
-def status():return jsonify(engine_ready=engine_ok,think_seconds=THINK_SECONDS)
+def status():return jsonify(engine_ready=engine_ok,think_seconds=THINK_SECONDS,public_friend_games=os.environ.get('ALLOW_PUBLIC_FRIEND_GAMES','false').lower()=='true')
 
 @app.post('/api/new')
 def new():
@@ -143,21 +143,25 @@ def new():
         while creation_attempts and now-creation_attempts[0]>60:creation_attempts.popleft()
         if len(creation_attempts)>=30:abort(429,'Too many creation attempts. Wait one minute.')
         creation_attempts.append(now)
+        public_friend = (
+            os.environ.get('ALLOW_PUBLIC_FRIEND_GAMES', 'false').lower() == 'true'
+            and d.get('mode') == 'friend'
+        )
         supplied=d.get('host_code','')
-        if not isinstance(supplied,str) or not secrets.compare_digest(supplied,HOST_CODE):
+        if not public_friend and (not isinstance(supplied,str) or not secrets.compare_digest(supplied,HOST_CODE)):
             abort(403,'Incorrect host code. Use the private HOST_CODE saved in Render Environment.')
         mode=d.get('mode');control=d.get('control')
-        if mode not in ('friend','ai') or control not in CONTROLS:abort(400,'Choose a valid mode and time control.')
+        if mode not in ('friend','ai','selfplay') or control not in CONTROLS:abort(400,'Choose a valid mode and time control.')
         if len(rooms)>=40:abort(429,'Room limit reached. Use existing rooms or restart the service after games finish.')
-        if mode=='ai':
+        if mode in ('ai','selfplay'):
             if not engine_ok:abort(503,'Stockfish unavailable. Check Render logs or try a friend game.')
             for old in rooms.values():
                 flag_check(old)
-                if old['mode']=='ai' and old['phase'] in ('waiting','playing'):
-                    abort(409,'Only one active Stockfish game is allowed on this small service. Finish or cancel the earlier game.')
+                if old['mode'] in ('ai','selfplay') and old['phase'] in ('waiting','playing'):
+                    abort(409,'Only one active Stockfish or self-play game is allowed on this small service. Finish or cancel the earlier game.')
         rid=secrets.token_urlsafe(18);seconds,increment=CONTROLS[control]
         g=dict(board=chess.Board(),clock=GameClock(seconds,increment),mode=mode,control=control,
-               phase='waiting',result='*',message='Waiting for Black to join' if mode=='friend' else 'Click Start clock when ready',
+               phase='waiting',result='*',message='Waiting for Black to join' if mode=='friend' else 'Click Start when ready',
                white_token=secrets.token_urlsafe(32),black_token=secrets.token_urlsafe(32) if mode=='friend' else '',
                moves=[],created=now,revision=0,ai_pending=False)
         rooms[rid]=g
@@ -184,8 +188,12 @@ def action(rid):
         g=get_room(rid);who=player(g,token);flag_check(g)
         if who not in ('w','b'):abort(403,'Spectators cannot play.')
         act=d.get('action')
-        if act=='start' and g['mode']=='ai' and who=='w' and g['phase']=='waiting':
+        if g['mode']=='selfplay' and (who!='w' or act not in ('start','stop_selfplay','cancel')):
+            abort(403,'Only the host can start or stop automatic self-play; manual moves are disabled.')
+        if act=='start' and g['mode'] in ('ai','selfplay') and who=='w' and g['phase']=='waiting':
             g['phase']='playing';g['clock'].start();g['message']='White to move';g['revision']+=1
+        elif act=='stop_selfplay' and g['mode']=='selfplay' and who=='w' and g['phase']=='playing':
+            finish(g,'*','Automatic game stopped by host; not scored.')
         elif act=='resign' and g['phase']=='playing':
             finish(g,'0-1' if who=='w' else '1-0',('White' if who=='w' else 'Black')+' resigned.')
         elif act=='cancel' and who=='w' and g['phase']=='waiting':
@@ -218,12 +226,15 @@ def computer_move(rid,g):
                 flag_check(g)
                 if g['phase']!='playing':return
                 board=g['board'].copy(stack=True)
-                budget=min(THINK_SECONDS,max(.01,g['clock'].remaining['b']-.15))
+                expected_revision=g['revision']
+                side='w' if board.turn else 'b'
+                budget=min(THINK_SECONDS,max(.01,g['clock'].remaining[side]-.15))
             result=engine.play(board,chess.engine.Limit(time=budget))
         with lock:
             if rooms.get(rid) is not g:return
             flag_check(g)
             if g['phase']!='playing':return
+            if g['revision']!=expected_revision:return
             if result.move is None or result.move not in g['board'].legal_moves:
                 raise RuntimeError('Engine returned no legal move')
             commit_move(g,result.move)
@@ -240,8 +251,8 @@ def pgn(rid):
     with lock:
         g=get_room(rid);flag_check(g)
         game=chess.pgn.Game.from_board(g['board'])
-        game.headers.update(Event='World Peace Chess — casual timed play',White='Host',
-                            Black='Stockfish' if g['mode']=='ai' else 'Invited player',Result=g['result'])
+        game.headers.update(Event='World Peace Chess — casual timed play',White='Stockfish' if g['mode']=='selfplay' else 'Host',
+                            Black='Stockfish' if g['mode'] in ('ai','selfplay') else 'Invited player',Result=g['result'])
         seconds,inc=CONTROLS[g['control']];game.headers['TimeControl']=f'{seconds}+{inc}'
         response=app.response_class(str(game)+'\n',mimetype='application/x-chess-pgn')
         response.headers['Content-Disposition']='attachment; filename="world-peace-chess.pgn"'
@@ -254,7 +265,14 @@ def ticker():
             now=time.monotonic()
             for rid,g in list(rooms.items()):
                 flag_check(g)
-                if now-g['created']>86400:rooms.pop(rid,None)
+                if now-g['created']>86400:
+                    rooms.pop(rid,None)
+                    continue
+                if g['mode']=='selfplay' and g['phase']=='playing' and not g['ai_pending']:
+                    g['ai_pending']=True
+                    threading.Thread(target=computer_move,args=(rid,g),daemon=True).start()
 
 boot_engine()
 threading.Thread(target=ticker,daemon=True).start()
+
+# WPC_SELFPLAY_SOUND_V2
