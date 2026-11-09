@@ -24,12 +24,17 @@ function buildLinks(){const box=$('links');box.innerHTML='';if(!rid||watching)re
  for(const [label,url] of items){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.readOnly=true;input.value=url;input.onclick=()=>input.select();const b=document.createElement('button');b.textContent='Copy link';b.onclick=async()=>{try{await navigator.clipboard.writeText(url);b.textContent='Copied';}catch(e){input.focus();input.select();$('notice').textContent='Select and copy the link manually.';}};box.append(l,input,b);}
 }
 function accept(s){
+ const previous=state;
  const changed=!state||s.fen!==state.fen||s.role!==state.role;
  state=s;received=performance.now();
+ if(previous && previous.boot_id===s.boot_id && previous._room===rid && s.moves.length>previous.moves.length && window.wpcMoveSound)window.wpcMoveSound();
+ s._room=rid;
  if(changed){game.load(s.fen);selected=null;drawBoard();}
- $('status').textContent=s.message+(s.result!=='*'?' — '+s.result:'')+' · '+s.control+' · '+(s.role==='spectator'?'Spectator':s.role==='w'?'You are White':'You are Black');
- $('resign').disabled=$('draw').disabled=s.phase!=='playing'||s.role==='spectator';
- $('start').hidden=watching||!(s.mode==='ai'&&s.phase==='waiting'&&s.role==='w');
+ $('status').textContent=s.message+(s.result!=='*'?' — '+s.result:'')+' · '+s.control+' · '+(s.role==='spectator'?'Spectator':s.mode==='selfplay'?'You are the self-play host':s.role==='w'?'You are White':'You are Black');
+ $('resign').disabled=$('draw').disabled=s.phase!=='playing'||s.role==='spectator'||s.mode==='selfplay';
+ $('start').hidden=watching||!(['ai','selfplay'].includes(s.mode)&&s.phase==='waiting'&&s.role==='w');
+ $('stopSelfplay').hidden=watching||!(s.mode==='selfplay'&&s.phase==='playing'&&s.role==='w');
+ $('start').textContent=s.mode==='selfplay'?'Start automatic self-play':'Start clock';
  $('cancel').hidden=watching||!(s.phase==='waiting'&&s.role==='w');
  $('join').hidden=watching||!(joinToken&&s.mode==='friend'&&s.role!=='w'&&s.role!=='b'&&s.phase!=='ended');
  $('spectate').disabled=false;$('pgn').hidden=false;$('pgn').href='/api/room/'+rid+'/pgn';
@@ -63,7 +68,7 @@ function drawBoard(){
  }
 }
 function clickSquare(sq){
- if(!state||busy||watching||state.phase!=='playing'||state.role!==state.turn)return;
+ if(!state||busy||watching||state.phase!=='playing'||state.mode==='selfplay'||state.role!==state.turn)return;
  const p=game.get(sq);if(p&&p.color===state.role){selected=selected===sq?null:sq;drawBoard();return;}
  if(!selected)return;
  const choices=game.moves({square:selected,verbose:true}).filter(m=>m.to===sq);
@@ -76,7 +81,7 @@ function clocks(){if(!state)return;const reverse=state.role==='b';
  for(const [pos,side] of [['top',reverse?'w':'b'],['bottom',reverse?'b':'w']]){
   const running=state.phase==='playing'&&state.turn===side,key=side==='w'?'white':'black';
   const value=Math.max(0,state[key]-(running?(performance.now()-received)/1000:0));
-  $(pos+'Time').textContent=fmt(value);$(pos+'Name').textContent=side==='w'?'WHITE':state.mode==='ai'?'BLACK · Stockfish':'BLACK';
+  $(pos+'Time').textContent=fmt(value);$(pos+'Name').textContent=state.mode==='selfplay'?(side==='w'?'WHITE · Stockfish':'BLACK · Stockfish'):(side==='w'?'WHITE':state.mode==='ai'?'BLACK · Stockfish':'BLACK');
   $(pos+'Box').classList.toggle('running',running);$(pos+'Box').classList.toggle('low',value<30);
  }
 }
@@ -95,6 +100,7 @@ $('join').onclick=async()=>{
  try{const d=await api('/api/room/'+rid+'/join','POST',{token:joinToken});token=joinToken;joinToken='';saveSeat();try{sessionStorage.removeItem('wpc-join-'+rid);}catch(e){}accept(d);}
  catch(e){$('notice').textContent=e.message;}finally{busy=false;}
 };
+$('stopSelfplay').onclick=()=>{if(confirm('Stop this automatic game?'))act('stop_selfplay');};
 $('start').onclick=()=>act('start');$('cancel').onclick=()=>act('cancel');
 $('resign').onclick=()=>{if(confirm('Resign this game?'))act('resign');};$('draw').onclick=()=>act('claim_draw');
 $('spectate').onclick=()=>window.open('/room/'+rid+'?watch=1','_blank','noopener');
