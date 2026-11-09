@@ -111,7 +111,7 @@ def payload(g, token=''):
                 phase=g['phase'],turn='w' if g['board'].turn else 'b',role=player(g,token),
                 result=g['result'],message=g['message'],control=g['control'],mode=g['mode'],
                 moves=g['moves'][:],engine_ready=engine_ok,revision=g['revision'],boot_id=BOOT_ID,
-                think_seconds=THINK_SECONDS)
+                think_seconds=THINK_SECONDS,is_host=player(g,token)==g.get('host_side','w'))
 
 def commit_move(g,move):
     flag_check(g)
@@ -159,13 +159,20 @@ def new():
                 flag_check(old)
                 if old['mode'] in ('ai','selfplay') and old['phase'] in ('waiting','playing'):
                     abort(409,'Only one active Stockfish or self-play game is allowed on this small service. Finish or cancel the earlier game.')
+        color=d.get('color','random') if mode=='friend' else 'white'
+        if color not in ('white','black','random'):abort(400,'Choose White, Black, or Random.')
+        host_side=secrets.choice(('w','b')) if color=='random' else ('w' if color=='white' else 'b')
         rid=secrets.token_urlsafe(18);seconds,increment=CONTROLS[control]
         g=dict(board=chess.Board(),clock=GameClock(seconds,increment),mode=mode,control=control,
-               phase='waiting',result='*',message='Waiting for Black to join' if mode=='friend' else 'Click Start when ready',
+               phase='waiting',result='*',message='Waiting for invited player to join' if mode=='friend' else 'Click Start when ready',
                white_token=secrets.token_urlsafe(32),black_token=secrets.token_urlsafe(32) if mode=='friend' else '',
                moves=[],created=now,revision=0,ai_pending=False)
+        g['host_side']=host_side
+        g['guest_side']='b' if host_side=='w' else 'w'
         rooms[rid]=g
-        return jsonify(room=rid,token=g['white_token'],invite=g['black_token'])
+        host_token=g['white_token'] if host_side=='w' else g['black_token']
+        guest_token=(g['black_token'] if host_side=='w' else g['white_token']) if mode=='friend' else ''
+        return jsonify(room=rid,token=host_token,invite=guest_token)
 
 @app.get('/api/room/<rid>')
 def room_state(rid):
@@ -176,7 +183,7 @@ def join(rid):
     d=data();token=d.get('token','')
     with lock:
         g=get_room(rid)
-        if player(g,token)!='b':abort(403,'Invalid Black invitation.')
+        if g['mode']!='friend' or player(g,token)!=g.get('guest_side','b'):abort(403,'Invalid opponent invitation.')
         if g['phase']=='waiting':
             g['phase']='playing';g['clock'].start();g['message']='White to move';g['revision']+=1
         return jsonify(payload(g,token))
@@ -196,7 +203,7 @@ def action(rid):
             finish(g,'*','Automatic game stopped by host; not scored.')
         elif act=='resign' and g['phase']=='playing':
             finish(g,'0-1' if who=='w' else '1-0',('White' if who=='w' else 'Black')+' resigned.')
-        elif act=='cancel' and who=='w' and g['phase']=='waiting':
+        elif act=='cancel' and who==g.get('host_side','w') and g['phase']=='waiting':
             finish(g,'*','Unstarted game canceled.')
         elif act=='claim_draw' and g['phase']=='playing' and who==('w' if g['board'].turn else 'b'):
             # Immediate claims only; intended-next-move claims require arbiter handling.
@@ -251,8 +258,8 @@ def pgn(rid):
     with lock:
         g=get_room(rid);flag_check(g)
         game=chess.pgn.Game.from_board(g['board'])
-        game.headers.update(Event='World Peace Chess — casual timed play',White='Stockfish' if g['mode']=='selfplay' else 'Host',
-                            Black='Stockfish' if g['mode'] in ('ai','selfplay') else 'Invited player',Result=g['result'])
+        game.headers.update(Event='World Peace Chess — casual timed play',White='Stockfish' if g['mode']=='selfplay' else ('Host' if g.get('host_side','w')=='w' else 'Invited player'),
+                            Black='Stockfish' if g['mode'] in ('ai','selfplay') else ('Invited player' if g.get('host_side','w')=='w' else 'Host'),Result=g['result'])
         seconds,inc=CONTROLS[g['control']];game.headers['TimeControl']=f'{seconds}+{inc}'
         response=app.response_class(str(game)+'\n',mimetype='application/x-chess-pgn')
         response.headers['Content-Disposition']='attachment; filename="world-peace-chess.pgn"'
@@ -276,3 +283,7 @@ boot_engine()
 threading.Thread(target=ticker,daemon=True).start()
 
 # WPC_SELFPLAY_SOUND_V2
+
+# WPC_COLORS_TEACHING_ZIP_V1
+from teaching import register_lessons
+register_lessons(app, lock, HOST_CODE, creation_attempts)
