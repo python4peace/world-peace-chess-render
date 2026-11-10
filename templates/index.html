@@ -7,11 +7,6 @@
 
     <title>World Peace Chess</title>
 
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"
-        referrerpolicy="no-referrer">
-    </script>
-
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
@@ -56,17 +51,9 @@
     <div id="links"></div>
 
     <div class="bar">
-        <button id="join" hidden>
-            Join as Black — start clocks
-        </button>
-
-        <button id="start" hidden>
-            Start clock
-        </button>
-
-        <button id="cancel" hidden>
-            Cancel unstarted game
-        </button>
+        <button id="join" hidden>Join as Black — start clocks</button>
+        <button id="start" hidden>Start clock</button>
+        <button id="cancel" hidden>Cancel unstarted game</button>
     </div>
 
     <div class="clock" id="topBox">
@@ -135,11 +122,77 @@
     </footer>
 </main>
 
-<!-- Existing game logic: keep this line. -->
-<script src="/static/app.js"></script>
+<!-- Display startup problems instead of silently staying on Loading. -->
+<script>
+(function () {
+    function report(message) {
+        var notice = document.getElementById("notice");
+        if (!notice) return;
 
-<!-- New royal board and metallic-style pieces. -->
+        var line = document.createElement("div");
+        line.textContent = message;
+        notice.appendChild(line);
+        notice.style.color = "#9b111e";
+        notice.style.background = "#fff4f4";
+        notice.style.padding = "12px";
+        notice.style.whiteSpace = "pre-wrap";
+    }
+
+    window.addEventListener("error", function (event) {
+        var target = event.target;
+
+        if (target && target.tagName === "SCRIPT") {
+            report("Could not load script: " + target.src);
+        } else if (event.message) {
+            report(
+                "JavaScript error: " + event.message +
+                (event.filename ? "\nFile: " + event.filename : "") +
+                (event.lineno ? "\nLine: " + event.lineno : "")
+            );
+        }
+    }, true);
+
+    window.addEventListener("unhandledrejection", function (event) {
+        var reason = event.reason;
+        report(
+            "Unhandled error: " +
+            (reason && reason.message ? reason.message : String(reason))
+        );
+    });
+
+    window.addEventListener("load", function () {
+        if (typeof window.Chess !== "function") {
+            report(
+                "The chess.js library did not become available. " +
+                "Check for a blocked or failed download."
+            );
+        }
+
+        setTimeout(function () {
+            var status = document.getElementById("status");
+            if (status && status.textContent.trim() === "Loading…") {
+                report(
+                    "Game startup did not finish. " +
+                    "Please send the current static/app.js file " +
+                    "and any error shown above."
+                );
+            }
+        }, 3000);
+    });
+})();
+</script>
+
+<!-- Load the chess library before the game code. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+<!-- Keep existing game functionality. -->
+<script src="/static/app.js?v=startup-fix-2"></script>
+
+<!-- Keep the existing royal theme. -->
 <script src="/static/royal-theme.js?v=1"></script>
+
+<!-- Restore the existing sound script. -->
+<script src="/static/move-sounds.js?v=4"></script>
 
 </body>
 </html>
