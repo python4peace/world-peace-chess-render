@@ -1,245 +1,145 @@
- World Peace Chess — ROYAL THEME
-   White army: crimson + gold, emerald jewels
-   Black army: midnight royal-purple + gold, turquoise jewels
-   Drop in static/ and add before </body> in templates/index.html:
-     <script src="/static/royal-theme.js" defer></script>
-   Works with Unicode glyph boards (♔♕♖♗♘♙ / ♚♛♜♝♞♟) and with
-   data-piece="wK" / data-piece="bN" style boards.
-   ============================================================ */
-(function () {
-  'use strict';
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
 
-  /* ---------- 1. STYLES ---------- */
-  var CSS = `
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at top,#1b2f4d 0%,#0b1424 70%);color:#eef4fb;font-family:Georgia,'Times New Roman',serif;padding:16px;min-height:100vh}
-main{max-width:720px;margin:auto}
-h1{font-size:28px;margin:0 0 10px;text-align:center;letter-spacing:1px;
-  background:linear-gradient(90deg,#b8860b,#fff1a8,#f2c14e,#fff1a8,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
-button,select{padding:11px;border-radius:8px;border:1px solid #c9a54a;background:linear-gradient(#2a3f5f,#1a2a44);color:#f7e7b0;font-family:inherit}
-button{cursor:pointer;transition:transform .12s,box-shadow .12s}
-button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 10px rgba(242,193,78,.35)}
-button:disabled{cursor:default;opacity:.5}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.clock{font:bold 38px monospace;background:linear-gradient(#2c4262,#1b2b45);border:1px solid #8a6d22;border-radius:12px;padding:12px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;color:#ffe8a3}
-.clock small{font:17px Georgia,serif;color:#e8d6a0}
-.running{outline:3px solid #f2c14e;box-shadow:0 0 18px rgba(242,193,78,.5)}
-.low{color:#ff7979}
+    <title>World Peace Chess</title>
 
-/* Board: gold frame, ivory + burgundy-wood squares */
-#board{display:grid;grid-template-columns:repeat(8,1fr);
-  border:10px solid transparent;border-radius:6px;
-  background:linear-gradient(#101b2c,#101b2c) padding-box,
-             linear-gradient(135deg,#fff1a8,#b8860b 30%,#f2c14e 55%,#7a5a0c 80%,#fff1a8) border-box;
-  box-shadow:0 12px 34px rgba(0,0,0,.65),0 0 0 2px #5b4208}
-.sq{position:relative;aspect-ratio:1;border:0;border-radius:0;padding:0;display:flex;align-items:center;justify-content:center;
-  font-size:clamp(24px,7.8vw,60px);color:#090909;font-family:'DejaVu Sans','Segoe UI Symbol',serif;box-shadow:none}
-.sq:hover:not(:disabled){transform:none;box-shadow:inset 0 0 0 3px rgba(242,193,78,.6)}
-.light{background:radial-gradient(circle at 30% 30%,#fff4d6,#ecd7a6)}
-.dark{background:radial-gradient(circle at 30% 30%,#a8454f,#6e1f2b)}
-.selected{box-shadow:inset 0 0 0 5px #f2c14e,inset 0 0 22px rgba(255,241,168,.8)!important}
-.legal:after{content:'';position:absolute;width:24%;height:24%;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#fff1a8,#d9a520);box-shadow:0 0 8px rgba(242,193,78,.9);z-index:3}
-.coord{position:absolute;left:3px;bottom:2px;font:10px Arial;color:#3b2a10;opacity:.75;z-index:1}
-.dark .coord{color:#f3dba0}
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"
+        referrerpolicy="no-referrer">
+    </script>
 
-/* SVG royal pieces */
-.sq{overflow:visible}
-#board{margin-top:22px}
-:root{--piece-h:122%}  /* make pieces bigger/smaller: try 100% to 140% */
-.sq svg.pc{position:absolute;left:0;right:0;bottom:-5%;margin:0 auto;z-index:2;height:var(--piece-h);width:auto;pointer-events:none;
-  overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.6));transition:transform .15s;transform-origin:50% 90%}
-.sq:hover svg.pc{transform:scale(1.06)}
-.sq.has-royal{font-size:0;color:transparent}
+    <link rel="stylesheet" href="/static/style.css">
+</head>
 
-#status,#notice{padding:10px;background:linear-gradient(#2a3f5f,#1d2f4b);border:1px solid #6e5a22;border-radius:8px;margin:8px 0;color:#f6ead0}
-#notice:empty{display:none}#notice{color:#ffd484}
-#moves{max-height:140px;overflow:auto;line-height:1.7}
-input{width:100%;padding:9px;margin:4px 0;background:#1d3048;color:#e8f1fb;border:1px solid #8a6d22;border-radius:6px}
-p,label{font-size:14px;color:#c3d0e0}
-a{color:#ffd978}
-#links{margin:12px 0}
-details{margin:16px 0}
-[hidden]{display:none!important}
-body.clean #creator,body.clean #links,body.clean #actions,body.clean #notes,body.clean footer{display:none!important}
-button:focus-visible,a:focus-visible{outline:3px solid #f2c14e}
-`;
-  var st = document.createElement('style');
-  st.id = 'royal-theme-css';
-  st.textContent = CSS;
-  document.head.appendChild(st);
+<body>
+<main>
+    <h1>World Peace Chess</h1>
 
-  /* ---------- 2. SHARED GRADIENTS ---------- */
-  var DEFS = `
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
- <linearGradient id="rg-gold" x1="0" y1="0" x2="1" y2="1">
-  <stop offset="0" stop-color="#fff6c2"/><stop offset=".35" stop-color="#f5c542"/>
-  <stop offset=".7" stop-color="#b8860b"/><stop offset="1" stop-color="#f7d774"/></linearGradient>
- <linearGradient id="rg-red" x1="0" y1="0" x2="1" y2="0">
-  <stop offset="0" stop-color="#ff6b6f"/><stop offset=".4" stop-color="#d1182b"/><stop offset="1" stop-color="#6d0613"/></linearGradient>
- <linearGradient id="rg-night" x1="0" y1="0" x2="1" y2="0">
-  <stop offset="0" stop-color="#7b4fc4"/><stop offset=".4" stop-color="#2d1659"/><stop offset="1" stop-color="#07030f"/></linearGradient>
- <radialGradient id="rg-emerald" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#b8ffe0"/><stop offset=".5" stop-color="#18c985"/><stop offset="1" stop-color="#05603f"/></radialGradient>
- <radialGradient id="rg-turq" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#d4fffb"/><stop offset=".5" stop-color="#2fd8e6"/><stop offset="1" stop-color="#0a5f86"/></radialGradient>
- <radialGradient id="rg-pearl" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d8c9a0"/></radialGradient>
-</defs></svg>`;
+    <p>
+        Timed online games · Full-strength Stockfish · Private invitations
+    </p>
 
-  /* ---------- 3. PIECE ART (viewBox 0 0 100 100) ---------- */
-  function palette(c) {
-    return c === 'w'
-      ? { body: 'url(#rg-red)', edge: '#3d0309', jewel: 'url(#rg-emerald)' }
-      : { body: 'url(#rg-night)', edge: '#000', jewel: 'url(#rg-turq)' };
-  }
+    <div id="status" role="status">Loading…</div>
+    <div id="notice" role="alert"></div>
 
-  // shared pedestal
-  function base(p) {
-    return `
- <rect x="18" y="85" width="64" height="9" rx="4.5" fill="url(#rg-gold)" stroke="#5b4208" stroke-width="1.5"/>
- <path d="M24 85 Q26 77 33 75 H67 Q74 77 76 85Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <rect x="29" y="72" width="42" height="5" rx="2.5" fill="url(#rg-gold)" stroke="#5b4208" stroke-width="1.2"/>`;
-  }
-  function gem(x, y, r, p) {
-    return `<circle cx="${x}" cy="${y}" r="${r}" fill="${p.jewel}" stroke="#5b4208" stroke-width="1"/>`;
-  }
-  var G = 'fill="url(#rg-gold)" stroke="#5b4208" stroke-width="1.6" stroke-linejoin="round"';
+    <section id="creator">
+        <label for="hostCode">
+            Private host code — only the owner needs this to create games
+        </label>
 
-  var ART = {
-    K: function (p) { return `
- ${base(p)}
- <path d="M35 73 C37 60 41 52 43 45 H57 C59 52 63 60 65 73Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <path d="M45 50 C44 58 42 64 41 72" stroke="rgba(255,255,255,.25)" stroke-width="2" fill="none"/>
- <rect x="37" y="41" width="26" height="6" rx="3" ${G}/>
- <path d="M34 41 L31 22 L41 30 L50 18 L59 30 L69 22 L66 41Z" ${G}/>
- <path d="M38 38 Q50 33 62 38" stroke="#7a5a0c" stroke-width="1.5" fill="none"/>
- <rect x="47" y="3" width="6" height="17" rx="1.5" ${G}/>
- <rect x="41" y="8" width="18" height="6" rx="1.5" ${G}/>
- ${gem(50, 11, 2.3, p)}${gem(31, 22, 2.6, p)}${gem(69, 22, 2.6, p)}${gem(50, 31, 3, p)}`; },
+        <input
+            id="hostCode"
+            type="password"
+            autocomplete="off"
+            placeholder="Your HOST_CODE from Render Environment">
 
-    Q: function (p) { return `
- ${base(p)}
- <path d="M33 73 C35 60 40 52 42 45 H58 C60 52 65 60 67 73Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <path d="M45 50 C44 58 42 64 41 72" stroke="rgba(255,255,255,.25)" stroke-width="2" fill="none"/>
- <rect x="35" y="41" width="30" height="6" rx="3" ${G}/>
- <path d="M32 41 L24 22 L38 32 L43 14 L50 30 L57 14 L62 32 L76 22 L68 41Z" ${G}/>
- <circle cx="24" cy="19" r="4.2" fill="url(#rg-pearl)" stroke="#5b4208" stroke-width="1.2"/>
- <circle cx="43" cy="11" r="4.2" fill="url(#rg-pearl)" stroke="#5b4208" stroke-width="1.2"/>
- <circle cx="57" cy="11" r="4.2" fill="url(#rg-pearl)" stroke="#5b4208" stroke-width="1.2"/>
- <circle cx="76" cy="19" r="4.2" fill="url(#rg-pearl)" stroke="#5b4208" stroke-width="1.2"/>
- <circle cx="50" cy="22" r="3.4" fill="url(#rg-pearl)" stroke="#5b4208" stroke-width="1.2"/>
- ${gem(50, 36, 3.2, p)}${gem(40, 37, 2, p)}${gem(60, 37, 2, p)}`; },
+        <div class="bar">
+            <select id="mode" aria-label="Opponent">
+                <option value="friend">Play a friend online</option>
+                <option value="ai">Full-strength Stockfish</option>
+            </select>
 
-    R: function (p) { return `
- ${base(p)}
- <path d="M32 73 L36 42 H64 L68 73Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <path d="M40 46 L38 70" stroke="rgba(255,255,255,.25)" stroke-width="2.4" fill="none"/>
- <path d="M30 42 V20 H39 V27 H45 V20 H55 V27 H61 V20 H70 V42Z" ${G}/>
- <rect x="29" y="40" width="42" height="6" rx="2" ${G}/>
- <path d="M44 73 V62 Q50 53 56 62 V73Z" fill="url(#rg-gold)" stroke="#5b4208" stroke-width="1.2"/>
- ${gem(50, 33, 3.3, p)}`; },
+            <select id="control" aria-label="Time control">
+                <option value="3+2">3 minutes + 2 seconds</option>
+                <option value="5+3" selected>5 minutes + 3 seconds</option>
+                <option value="10+5">10 minutes + 5 seconds</option>
+            </select>
 
-    B: function (p) { return `
- ${base(p)}
- <path d="M38 73 L41 56 H59 L62 73Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <rect x="34" y="52" width="32" height="6" rx="3" ${G}/>
- <path d="M50 12 C65 24 69 38 62 47 C60 50 57 52 55 53 H45 C43 52 40 50 38 47 C31 38 35 24 50 12Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <path d="M44 20 C40 28 39 38 42 46" stroke="rgba(255,255,255,.28)" stroke-width="2.4" fill="none"/>
- <path d="M47 32 L58 22" stroke="url(#rg-gold)" stroke-width="4.5" stroke-linecap="round"/>
- <path d="M44 38 Q50 34 58 40" stroke="url(#rg-gold)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
- <circle cx="50" cy="9" r="5" ${G}/>
- ${gem(50, 46, 2.6, p)}`; },
+            <button id="create">Create new game</button>
+        </div>
+    </section>
 
-    N: function (p) { return `
- ${base(p)}
- <path d="M28 73 C27 60 33 52 41 46 C36 46 31 49 28 53 C25 49 26 44 30 39 C34 34 41 30 44 22 L43 11 L51 17 C55 15 60 15 63 17 C77 23 76 50 72 73Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2" stroke-linejoin="round"/>
- <path d="M62 17 C76 23 75 50 71 73 L64 73 C68 50 66 34 55 23Z" ${G}/>
- <path d="M47 24 C42 30 38 34 33 38" stroke="rgba(255,255,255,.3)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
- <path d="M44 31 L35 47" stroke="url(#rg-gold)" stroke-width="3" fill="none" stroke-linecap="round"/>
- <circle cx="46" cy="29" r="3.1" fill="url(#rg-gold)" stroke="#000" stroke-width="1"/>
- <circle cx="46.3" cy="28.7" r="1.1" fill="#000"/>
- <ellipse cx="30" cy="49" rx="1.8" ry="1.3" fill="#000" opacity=".7"/>
- <path d="M45 11 L50 3 L55 11Z" ${G}/>
- ${gem(50, 20, 2.6, p)}`; },
+    <div id="links"></div>
 
-    P: function (p) { return `
- ${base(p)}
- <path d="M41 50 C39 60 35 68 31 74 H69 C65 68 61 60 59 50Z" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <path d="M44 54 C43 61 41 66 39 71" stroke="rgba(255,255,255,.25)" stroke-width="2" fill="none"/>
- <rect x="35" y="45" width="30" height="6" rx="3" ${G}/>
- <circle cx="50" cy="33" r="12" fill="${p.body}" stroke="${p.edge}" stroke-width="2"/>
- <path d="M42 28 Q44 22 50 21" stroke="rgba(255,255,255,.35)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
- <path d="M39 38 Q50 44 61 38" stroke="url(#rg-gold)" stroke-width="3" fill="none" stroke-linecap="round"/>
- ${gem(50, 33, 3, p)}`; }
-  };
+    <div class="bar">
+        <button id="join" hidden>
+            Join as Black — start clocks
+        </button>
 
-  function svgFor(type, color) {
-    var p = palette(color);
-    return '<svg class="pc" viewBox="12 1 76 95" xmlns="http://www.w3.org/2000/svg" ' +
-           'data-key="' + color + type + '" role="img" aria-label="' +
-           (color === 'w' ? 'White ' : 'Black ') + type + '">' + ART[type](p) + '</svg>';
-  }
+        <button id="start" hidden>
+            Start clock
+        </button>
 
-  /* ---------- 4. FIND WHICH PIECE IS ON A SQUARE ---------- */
-  var OUTLINE = { '♔': 'K', '♕': 'Q', '♖': 'R', '♗': 'B', '♘': 'N', '♙': 'P' };
-  var SOLID   = { '♚': 'K', '♛': 'Q', '♜': 'R', '♝': 'B', '♞': 'N', '♟': 'P' };
+        <button id="cancel" hidden>
+            Cancel unstarted game
+        </button>
+    </div>
 
-  function pieceOf(el) {
-    var d = el.dataset || {};
-    var raw = d.piece || d.p || '';
-    if (/^[wb][KQRBNPkqrbnp]$/.test(raw)) return { c: raw[0], t: raw[1].toUpperCase() };
+    <div class="clock" id="topBox">
+        <small id="topName">BLACK</small>
+        <span id="topTime">05:00.0</span>
+    </div>
 
-    var txt = (el.textContent || '').replace(/[\s\uFE0E\uFE0F]/g, '');
-    var ch = txt.charAt(0);
-    if (OUTLINE[ch]) return { c: 'w', t: OUTLINE[ch] };
-    if (SOLID[ch]) {
-      var cls = el.className || '';
-      var c = /\bwhite\b|\bw-piece\b|piece-w/i.test(cls) || d.color === 'w' || d.color === 'white' ? 'w' : 'b';
-      return { c: c, t: SOLID[ch] };
-    }
-    return null;
-  }
+    <div id="board" aria-label="Chessboard"></div>
 
-  /* ---------- 5. PAINT THE BOARD ---------- */
-  var board, obs, queued = false;
+    <div class="clock" id="bottomBox">
+        <small id="bottomName">WHITE</small>
+        <span id="bottomTime">05:00.0</span>
+    </div>
 
-  function paint() {
-    queued = false;
-    if (!board) return;
-    obs.disconnect();
-    board.querySelectorAll('.sq').forEach(function (sq) {
-      var old = sq.querySelector(':scope > svg.pc');
-      var pc = pieceOf(sq);
-      if (!pc) {
-        if (old) old.remove();
-        sq.classList.remove('has-royal');
-        return;
-      }
-      var key = pc.c + pc.t;
-      if (old && old.getAttribute('data-key') === key) { sq.classList.add('has-royal'); return; }
-      if (old) old.remove();
-      sq.insertAdjacentHTML('afterbegin', svgFor(pc.t, pc.c));
-      sq.classList.add('has-royal');
-    });
-    watch();
-  }
-  function watch() { obs.observe(board, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['data-piece', 'class'] }); }
-  function schedule() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+    <div class="bar" id="actions">
+        <button id="resign" disabled>Resign</button>
+        <button id="draw" disabled>Claim draw</button>
+        <button id="spectate" disabled>Clean spectator view</button>
+        <a id="pgn" hidden>Save PGN</a>
+    </div>
 
-  function start() {
-    document.body.insertAdjacentHTML('beforeend', DEFS);
-    board = document.getElementById('board');
-    if (!board) { return; }
-    obs = new MutationObserver(function (m) {
-      // ignore changes caused only by our own svg
-      for (var i = 0; i < m.length; i++) {
-        var t = m[i].target;
-        if (!(t.nodeType === 1 && t.closest && t.closest('svg.pc'))) { schedule(); return; }
-      }
-    });
-    watch();
-    paint();
-  }
+    <div id="moves"></div>
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-  else start();
-})();
+    <details id="notes">
+        <summary>Rules, privacy, and free-hosting limits</summary>
+
+        <p>
+            Host plays White; Black joins with a private invitation.
+            Clocks start when Black clicks Join.
+            Against Stockfish, White clicks Start clock.
+            No undo or pause.
+            Clocks continue during disconnections and network delay.
+            Refresh on this same browser and address to reconnect.
+        </p>
+
+        <p>
+            Server restart, redeploy or Render sleep deletes rooms.
+            Rooms expire after 24 hours.
+            Keep a PGN copy.
+            This is casual play, not tournament-certified.
+            Timeout draws use a material-based approximation.
+            Draw claims are for the current position only;
+            intended-next-move claims and draw offers are not implemented.
+        </p>
+
+        <p>
+            Never post a private opponent invitation or your HOST_CODE on TikTok.
+            Use the clean spectator link.
+            Anyone with the invitation can control Black.
+            Browser storage holds your seat, so do not clear it midgame.
+            No accounts, ratings, anti-cheat or chat voting.
+            Internet is needed for the chess.js browser library.
+        </p>
+    </details>
+
+    <footer>
+        <p>
+            Built with python-chess, chess.js and Stockfish.
+            <a
+                href="https://stockfishchess.org/"
+                target="_blank"
+                rel="noopener noreferrer">
+                Stockfish project
+            </a>
+        </p>
+    </footer>
+</main>
+
+<!-- Existing game logic: keep this line. -->
+<script src="/static/app.js"></script>
+
+<!-- New royal board and metallic-style pieces. -->
+<script src="/static/royal-theme.js?v=1"></script>
+
+</body>
+</html>
