@@ -7,13 +7,7 @@ for(var r=0;r<8;r++)for(var c=0;c<8;c++){var s=document.createElement('button');
  if(r==5&&c==2)s.className+=' selected';if(r==4&&c==3)s.className+=' legal';
  s.textContent=(rows[r]||'').charAt(c)||'';b.appendChild(s);}
 </script>
-<script>
-/* ============================================================
-   World Peace Chess — ROYAL THEME
-   White army: crimson + gold, emerald jewels
-   Black army: midnight royal-purple + gold, turquoise jewels
-   Drop in static/ and add before </body> in templates/index.html:
-     <script src="/static/royal-theme-new.js" defer><\/script>
+<script src="/static/royal-theme.js" defer></script>
    3D-rendered ruby/gold and amethyst/gold pieces, embedded in this one file.
    Works with Unicode glyph boards (♔♕♖♗♘♙ / ♚♛♜♝♞♟) and with
    data-piece="wK" / data-piece="bN" style boards.
