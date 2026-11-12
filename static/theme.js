@@ -1,39 +1,236 @@
-/* Reuben World Peace Unity Chess — upright, spaced, high-contrast revision.
-   Load after royal-theme.js. Replaces only the earlier theme.js add-on.
-   Existing SVG artwork and all game controls remain unchanged. */
-(function(){'use strict';
-var css=`
-/* Wider on desktop, still responsive on phones. No tilted or rotated board. */
-main{max-width:880px}
-#board{--piece-h:94%;position:relative;isolation:isolate;transform:none;perspective:none;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));margin-top:18px;margin-bottom:22px;overflow:hidden;border:8px solid transparent;border-radius:6px;background:linear-gradient(#1b2027,#1b2027) padding-box,linear-gradient(135deg,#fff1b5,#b88b35 30%,#efce79 55%,#6e501c 80%,#ffe7a1) border-box;box-shadow:0 0 0 1px #644c27,0 8px 0 #382a19,0 15px 25px #0008}
-#board .sq{position:relative;min-width:0;min-height:0;aspect-ratio:1;overflow:hidden;transform:none;perspective:none;padding:0;border:0;border-radius:0;isolation:isolate}
-/* Neutral squares distinguish both white and black armies. */
-#board .sq.light{background:linear-gradient(140deg,#eee9df,#d9d3c7)}
-#board .sq.dark{background:linear-gradient(140deg,#78909d,#526b7a)}
-#board .sq:hover:not(:disabled){transform:none;box-shadow:inset 0 0 0 3px #e8ba51}
-#board .sq.selected{box-shadow:inset 0 0 0 4px #ffda72!important}
-/* Fit the entire standing SVG within the square, with a narrow footprint.
-   Width and height are bounded; the SVG retains its own aspect ratio. */
-#board .sq svg.pc{position:absolute;left:50%;right:auto;top:auto;bottom:3%;margin:0;width:74%;height:94%;max-width:74%;max-height:94%;z-index:1;overflow:hidden;pointer-events:none;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 2px 1px #0008);transition:none}
-#board .sq:hover svg.pc{transform:translateX(-50%);filter:drop-shadow(0 2px 1px #0008)}
+
+/* Reuben World Peace Unity Chess: appearance only. */
+(function () {
+"use strict";
+let serial = 0;
+
+function artwork(side, type) {
+  const white = side === "w";
+  const id = "uprightRoyal" + (++serial);
+  const body = "url(#" + id + "body)";
+  const gold = "url(#" + id + "gold)";
+  const edge = white ? "#796846" : "#aab5c4";
+  const jewel = white ? "#07885d" : "#38d7e8";
+
+  const defs = `<defs>
+    <linearGradient id="${id}body">
+      <stop stop-color="${white ? "#b9aa8b" : "#020408"}"/>
+      <stop offset=".32" stop-color="${white ? "#ffffff" : "#596779"}"/>
+      <stop offset=".55" stop-color="${white ? "#fffdf4" : "#1c2736"}"/>
+      <stop offset="1" stop-color="${white ? "#bbae92" : "#020408"}"/>
+    </linearGradient>
+    <linearGradient id="${id}gold">
+      <stop stop-color="#78521c"/>
+      <stop offset=".38" stop-color="#fff0b0"/>
+      <stop offset=".62" stop-color="#ddb454"/>
+      <stop offset="1" stop-color="#79521d"/>
+    </linearGradient>
+  </defs>`;
+
+  const pedestal = `
+    <ellipse cx="50" cy="94" rx="29" ry="3" fill="#0005"/>
+    <path d="M27 88h46l5 7H22Z"
+      fill="${gold}" stroke="#71501f" stroke-width="1.3"/>
+    <path d="M30 83h40l3 5H27Z"
+      fill="${body}" stroke="${edge}" stroke-width="1.2"/>
+  `;
+
+  const stem = `
+    <path d="M42 43h16q0 21 10 39H32q10-18 10-39Z"
+      fill="${body}" stroke="${edge}" stroke-width="1.4"/>
+    <path d="M43 49q-1 18-6 29"
+      fill="none" stroke="${white ? "#fff" : "#8e9eaf"}"
+      stroke-opacity=".65" stroke-width="2"/>
+    <ellipse cx="50" cy="46" rx="17" ry="4"
+      fill="${gold}" stroke="#71501f"/>
+  `;
+
+  let top = "";
+
+  if (type === "K") {
+    top = `
+      <path d="M35 41l-3-18 11 7 7-13 7 13 11-7-3 18Z"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"/>
+      <path d="M34 39h32v5H34Z"
+        fill="${gold}" stroke="#71501f"/>
+      <path d="M47 4h6v15h-6Z M41 9h18v5H41Z"
+        fill="${gold}" stroke="#71501f"/>
+      <circle cx="50" cy="33" r="3.5"
+        fill="${jewel}" stroke="#8b6a2a"/>
+    `;
+  } else if (type === "Q") {
+    top = `
+      <path d="M34 41l-7-20 13 10 4-17 6 15 6-15 4 17
+               13-10-7 20Z"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"/>
+      <path d="M33 39h34v5H33Z"
+        fill="${gold}" stroke="#71501f"/>
+      <g fill="${gold}" stroke="#71501f">
+        <circle cx="27" cy="18" r="3"/>
+        <circle cx="44" cy="11" r="3"/>
+        <circle cx="56" cy="11" r="3"/>
+        <circle cx="73" cy="18" r="3"/>
+      </g>
+      <circle cx="50" cy="35" r="3" fill="${jewel}"/>
+    `;
+  } else if (type === "B") {
+    top = `
+      <path d="M50 9q22 20 12 31l-7 5H45l-7-5Q28 29 50 9Z"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"/>
+      <path d="M48 27l10-10"
+        stroke="${gold}" stroke-width="4"/>
+      <circle cx="50" cy="7" r="4"
+        fill="${gold}" stroke="#71501f"/>
+      <circle cx="50" cy="37" r="3" fill="${jewel}"/>
+    `;
+  } else if (type === "N") {
+    top = `
+      <path d="M34 45q-6-10 2-20l9-10-1-9 9 6
+               q22-2 20 29l-4 39H34q0-18 14-32l-9 6-9-4Z"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"
+        stroke-linejoin="round"/>
+      <path d="M57 14q14 15 10 43l-3 22"
+        fill="none" stroke="${gold}" stroke-width="4"/>
+      <path d="M43 26l-8 17" stroke="${gold}" stroke-width="2.5"/>
+      <circle cx="47" cy="25" r="2.5"
+        fill="${white ? "#17202a" : "#f6e2a4"}"/>
+      <path d="M33 46l8 1" stroke="${edge}" stroke-width="1.5"/>
+    `;
+  } else if (type === "R") {
+    top = `
+      <path d="M35 81l4-40h22l4 40Z"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"/>
+      <path d="M33 40V17h8v8h6v-8h7v8h6v-8h8v23Z"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"/>
+      <path d="M32 39h37v5H32Z"
+        fill="${gold}" stroke="#71501f"/>
+      <path d="M45 81V67q5-9 10 0v14Z"
+        fill="${white ? "#776a54" : "#020408"}"
+        stroke="${gold}"/>
+      <path d="M39 54h22M37 65h8m10 0h8"
+        stroke="${edge}" opacity=".5"/>
+    `;
+  } else {
+    top = `
+      <circle cx="50" cy="31" r="13"
+        fill="${body}" stroke="${edge}" stroke-width="1.5"/>
+      <path d="M42 24q3-4 8-4"
+        stroke="${white ? "#fff" : "#a2b1c5"}"
+        stroke-width="2" fill="none" opacity=".8"/>
+      <ellipse cx="50" cy="45" rx="16" ry="4"
+        fill="${gold}" stroke="#71501f"/>
+      <circle cx="50" cy="31" r="3" fill="${jewel}"/>
+    `;
+  }
+
+  return defs + pedestal
+    + (type === "N" || type === "R" ? "" : stem)
+    + top;
+}
+
+const css = `
+main{max-width:900px}
+#board{
+  display:grid;grid-template-columns:repeat(8,minmax(0,1fr));
+  position:relative;isolation:isolate;transform:none;perspective:none;
+  overflow:hidden;margin-top:18px;margin-bottom:24px;
+  border:8px solid #bc9544;border-radius:4px;background:#000;
+  box-shadow:0 0 0 2px #513c19,0 8px 0 #382914,0 17px 27px #0008
+}
+#board .sq{
+  position:relative;min-width:0;min-height:0;aspect-ratio:1;
+  overflow:hidden;padding:0;border:0;border-radius:0;
+  transform:none;isolation:isolate
+}
+#board .sq.light{background:#fff}
+#board .sq.dark{background:#000}
+#board .sq:hover:not(:disabled){
+  transform:none;box-shadow:inset 0 0 0 3px #d7b35d
+}
+#board .sq.selected{
+  box-shadow:inset 0 0 0 4px #ffd46b!important
+}
+#board .sq svg.pc,#board .sq:hover svg.pc{
+  position:absolute;left:50%;right:auto;top:auto;bottom:2%;
+  width:82%;height:95%;max-width:82%;max-height:95%;
+  margin:0;overflow:hidden;z-index:1;pointer-events:none;
+  transform:translateX(-50%);transition:none;
+  filter:drop-shadow(0 1px 1px #0007)
+}
 #board .sq svg.pc *{pointer-events:none}
-/* Recolor the ORIGINAL piece bodies without editing their SVG paths. */
-#board svg.pc[data-key^="w"] [fill="url(#rg-red)"]{fill:#fff8e9;stroke:#695a43}
-#board svg.pc[data-key^="b"] [fill="url(#rg-night)"]{fill:#111820;stroke:#a7b2bd}
-/* Retain gold regalia; give the two armies different gold intensity. */
-#board svg.pc[data-key^="w"] [fill="url(#rg-gold)"]{fill:#edcf85;stroke:#79602f}
-#board svg.pc[data-key^="b"] [fill="url(#rg-gold)"]{fill:#a7843c;stroke:#e0c179}
-#board svg.pc[data-key^="w"] [fill="url(#rg-pearl)"]{fill:#ffffff;stroke:#79602f}
-#board svg.pc[data-key^="b"] [fill="url(#rg-pearl)"]{fill:#202a36;stroke:#d1b475}
-#board svg.pc[data-key^="w"] [stroke="rgba(255,255,255,.25)"],
-#board svg.pc[data-key^="w"] [stroke="rgba(255,255,255,.3)"],
-#board svg.pc[data-key^="w"] [stroke="rgba(255,255,255,.35)"]{stroke:#b4a58c}
-#board .sq .coord{position:absolute;left:3px;bottom:2px;z-index:3;font:10px Arial,sans-serif;color:#273444;opacity:1;pointer-events:none}
-#board .sq.dark .coord{color:#fff9e9;text-shadow:0 1px 1px #263543}
-#board .sq.legal:after{z-index:4;pointer-events:none;background:#36d692;border:1px solid #103e2d;box-shadow:0 0 0 2px #ffffff80}
-#board .sq:focus-visible{outline:3px solid #10e5a3;outline-offset:-4px}
-@media(max-width:520px){#board{border-width:5px}#board .sq .coord{font-size:8px}}
+#board .sq .coord{
+  z-index:3;color:#333;opacity:1;pointer-events:none;
+  font:10px Arial,sans-serif
+}
+#board .sq.dark .coord{color:#fff}
+#board .sq.legal:after{
+  z-index:4;pointer-events:none;background:#24d999;
+  border:1px solid #fff;box-shadow:0 0 0 1px #17533d
+}
+#board .sq:focus-visible{
+  outline:3px solid #25ffc1;outline-offset:-4px
+}
+@media(max-width:520px){
+  #board{border-width:5px}
+  #board .sq .coord{font-size:8px}
+}
 `;
-function apply(){if(!document.getElementById('board'))return;var style=document.getElementById('unity-royal-polish');if(!style){style=document.createElement('style');style.id='unity-royal-polish';document.head.appendChild(style);}style.textContent=css;}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
+
+function start() {
+  const board = document.getElementById("board");
+  if (!board) return;
+
+  let style = document.getElementById("unity-royal-polish");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "unity-royal-polish";
+    document.head.appendChild(style);
+  }
+  style.textContent = css;
+
+  let queued = false;
+  const observer = new MutationObserver(function () {
+    if (!queued) {
+      queued = true;
+      requestAnimationFrame(paint);
+    }
+  });
+
+  function watch() {
+    observer.observe(board, {
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:["data-key"]
+    });
+  }
+
+  function paint() {
+    queued = false;
+    observer.disconnect();
+    try {
+      for (const svg of board.querySelectorAll("svg.pc")) {
+        const key = svg.getAttribute("data-key") || "";
+        if (!/^[wb][KQRBNP]$/.test(key)) continue;
+        if (svg.getAttribute("data-standing-key") === key) continue;
+        svg.setAttribute("viewBox", "16 0 68 100");
+        svg.setAttribute("preserveAspectRatio", "xMidYMax meet");
+        svg.innerHTML = artwork(key[0], key[1]);
+        svg.setAttribute("data-standing-key", key);
+      }
+    } catch (error) {
+      console.warn("Royal artwork update:", error);
+    } finally {
+      watch();
+    }
+  }
+
+  paint();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", start, {once:true});
+} else {
+  start();
+}
 })();
