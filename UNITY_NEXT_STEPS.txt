@@ -1,0 +1,48 @@
+REUBEN WORLD PEACE UNITY CHESS
+
+This is a complete Git checkout downloaded from the user's confirmed working
+37c7572 snapshot, plus narrowly scoped branding and visual additions.
+It is NOT an independently rebuilt chess backend or a claim of full testing.
+
+CHANGES
+- New site name in game and teaching templates, plus navigation between them.
+- New theme.js after the existing royal-theme.js on the GAME page only.
+- Piece height: 122% -> 158.6%, exactly 30% larger than the old nominal height.
+- Refined ivory/burgundy squares, gold frame and dimensional shadows.
+- Existing artwork is preserved, not replaced with human portraits or true 3D.
+- Teaching rendering and all game/backend logic are unchanged.
+- Markdown URL wrappers repaired if identical URL wrappers are present in HTML.
+
+TEST BEFORE PUBLISHING
+Use your existing local setup if available. Do not invent a new HOST_CODE or
+share the existing one. No dependencies or engine were installed by this builder.
+The local repository's README.md and start.sh describe its runtime requirements.
+Check friend creation, opponent invitation in a separate browser, joining,
+legal moves/captures/promotion, clocks, sound, Stockfish, automatic self-play,
+game spectators, teacher/student invitations, teacher notes/undo/reset, lesson
+spectators, and a phone screen. Enlarged pieces can overlap; check readability.
+
+PUBLISHING — MANUAL, AFTER TESTING
+From this new folder only, review:
+  git status --short
+  git diff --stat
+Commit only these explicitly named files:
+  git add -- templates/index.html templates/lesson.html static/theme.js static/unity-brand.css UNITY_BUILD_INFO.json UNITY_NEXT_STEPS.txt
+  git commit -m "Rename site to Reuben World Peace Unity Chess and refine royal theme"
+Publish a NEW branch, not main:
+  git push -u origin reuben-unity-site
+Then review a GitHub pull request from reuben-unity-site into main. If newer
+main changes cause conflicts, STOP and resolve them deliberately. Do not force-push.
+Keep Render Auto-Deploy disabled until you deliberately select the new commit.
+The builder itself does not publish anything.
+
+LIVE BASELINE
+37c7572 remains your rollback reference. Never push the older November 8
+restoration that deletes teaching files. Never upload .env, virtual environments,
+private host codes, backups, or credentials.
+
+NOT IMPLEMENTED BY THIS UPDATE
+Saved video/audio lessons on repeat; persistent rooms across restarts; additional
+Stockfish difficulty levels; photorealistic human pieces; guaranteed uninterrupted
+hosting. Existing rooms still follow the baseline's in-memory lifetime limits.
+Changing the display name does not change the Render URL or GitHub repository name.

@@ -1,8 +1,10 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>World Peace Chess</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Reuben World Peace Unity Chess</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" referrerpolicy="no-referrer"></script>
-<link rel="stylesheet" href="/static/style.css"></head><body><main>
-<h1>World Peace Chess</h1><p>Timed online games · Full-strength Stockfish · Private invitations</p>
+<link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/unity-brand.css?v=1">
+</head><body><main>
+<nav class="unity-site-nav" aria-label="Site navigation"><span class="unity-name">Reuben World Peace Unity Chess</span><a href="/">Play chess</a><a href="/lesson">Teaching</a></nav>
+<h1>Reuben World Peace Unity Chess</h1><p>Timed online games · Full-strength Stockfish · Private invitations</p>
 <div id="status" role="status">Loading…</div><div id="notice" role="alert"></div>
 <section id="creator"><label for="hostCode">Private host code — only the owner needs this to create games</label><input id="hostCode" type="password" autocomplete="off" placeholder="Your HOST_CODE from Render Environment">
 <div class="bar"><select id="mode" aria-label="Opponent"><option value="friend">Play a friend online</option><option value="ai">Full-strength Stockfish</option><option value="selfplay">Stockfish vs Stockfish — automatic</option></select><select id="hostColor" aria-label="Your color in friend games"><option value="random">Coin toss — random color</option><option value="white">I play White</option><option value="black">I play Black</option></select><select id="control" aria-label="Time control"><option value="3+2">3 minutes + 2 seconds</option><option value="5+3" selected>5 minutes + 3 seconds</option><option value="10+5">10 minutes + 5 seconds</option></select><button id="create">Create new game</button></div></section>
@@ -13,4 +15,5 @@
 <footer><p>Built with python-chess, chess.js and Stockfish. <a href="https://stockfishchess.org/" target="_blank" rel="noopener noreferrer">Stockfish project</a></p></footer>
 </main><script src="/static/move-sounds.js?v=4"></script><script src="/static/app.js?v=4"></script><script src="/static/royal-theme.js?v=2"></script>
 
+<script src="/static/theme.js?v=unity-1"></script>
 </body></html>

@@ -1,0 +1,31 @@
+{
+  "site_name": "Reuben World Peace Unity Chess",
+  "baseline_commit": "37c75728bf87b101e514febd4f935a6488ac3b17",
+  "protected_source_sha256": {
+    "app.py": "c2e77ad9e410d0a64771f88e06a54e23cdf8b2b11066a4b3ba9386ba3365ea7c",
+    "teaching.py": "c509fee2137dfceef6643d0b48fb449138653d6332fb560c8e1d98e14cbeda4e",
+    "clocks.py": "11e38d4083e4616cbf1b42496d7031fe9996e3906f4bb9ceae19a483f63a07e3",
+    "static/app.js": "2b072637e3c4b4aa82b79f7a621e56cad223bb3f1cb5260a92f16dfdf446f6b4",
+    "static/lesson.js": "d4c3610b5b62cd9f087a4376eb03f90306dd5e68443da7dfa14863dea4ac5c69",
+    "static/move-sounds.js": "9f3ed07c98a5cdfc3ccbddc38d357b93af22f73ffe2e14cefc822ca7f21d003b",
+    "static/royal-theme.js": "3b4392d94ec5086312e8e5e1171e7576ff8fabbfafc689659f7ac46a71db9f44",
+    "static/style.css": "ebf7277bebe8d5f5d918f33056693366f9c493df8ae79a3897a3238e075dc421",
+    "requirements.txt": "b02d1cbd3e908f21824480c21c74c18790a5ba36b0143e07305eccaa95d52039",
+    "Dockerfile": "8fbabe8df26c0a74ad6e238ad38f1a210519a1e7fbfe624bb2a42d73f7d1bf1f",
+    "render.yaml": "01278196897d758949c605ce62b8ee81b2e80a3a1624a6d7b11d216e34d2ea80",
+    "start.sh": "71a15e534e301729c22950239f3783e64b330d4da928f765a227344b2aace587"
+  },
+  "game_and_teaching": "retained from baseline; no live tests performed",
+  "new_changes": [
+    "templates/index.html",
+    "templates/lesson.html",
+    "static/theme.js",
+    "static/unity-brand.css"
+  ],
+  "not_added": [
+    "recorded lesson playback",
+    "persistent room storage",
+    "new engine difficulty controls",
+    "photorealistic human artwork"
+  ]
+}
