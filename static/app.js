@@ -1,4 +1,15 @@
 "use strict";
+function wpcAccessStatus(response){
+ const value=response.headers.get('X-WPC-Access-Remaining');
+ if(value===null)return;
+ let box=document.getElementById('wpcAccessStatus');
+ if(!box){box=document.createElement('p');box.id='wpcAccessStatus';box.setAttribute('role','status');document.getElementById('notice').insertAdjacentElement('afterend',box);}
+ const left=Number(value);
+ box.textContent=left>0
+   ? `Access active: ${left} more game or teaching-session creations available without the code.`
+   : 'Your fourth creation is ready. Enter the code again only when creating your next game or teaching session.';
+}
+
 const $=id=>document.getElementById(id);
 let rid=location.pathname.startsWith('/room/')?location.pathname.split('/')[2]:null;
 const watching=new URLSearchParams(location.search).has('watch');
@@ -16,7 +27,7 @@ if(location.hash)history.replaceState(null,'',location.pathname+location.search)
 async function api(path,method='GET',body){
  const response=await fetch(path,{method,headers:{'Content-Type':'application/json','X-Player-Token':token},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store',signal:AbortSignal.timeout(15000)});
  let d;try{d=await response.json();}catch(e){throw Error('Service is starting or unavailable. Wait, then retry.');}
- if(!response.ok)throw Error(d.error||'Request failed');return d;
+ if(!response.ok)throw Error(d.error||'Request failed');wpcAccessStatus(response);return d;
 }
 function buildLinks(){const box=$('links');box.innerHTML='';if(!rid||watching)return;const base=location.origin+'/room/'+rid,items=[];
  if(invite&&state&&state.is_host)items.push(['Private player invitation — send only to your opponent',base+'#join='+invite]);
@@ -106,7 +117,7 @@ $('resign').onclick=()=>{if(confirm('Resign this game?'))act('resign');};$('draw
 $('spectate').onclick=()=>window.open('/room/'+rid+'?watch=1','_blank','noopener');
 window.addEventListener('popstate',()=>location.reload());
 if(typeof Chess==='undefined'){$('status').textContent='Chess library failed to load. Check your internet or browser blocker, then refresh.';$('create').disabled=true;}
-else{game=new Chess();drawBoard();if(rid)poll();else{$('status').textContent='Enter your private host code, choose an opponent and create a game.';api('/api/status').then(s=>{if(!s.engine_ready)$('notice').textContent='Stockfish is unavailable; friend games still work. Check Render logs.';}).catch(e=>$('notice').textContent=e.message);}
+else{game=new Chess();drawBoard();if(rid)poll();else{$('status').textContent='Create a game. Enter your private host code only when access needs renewing.';api('/api/status').then(s=>{if(!s.engine_ready)$('notice').textContent='Stockfish is unavailable; friend games still work. Check Render logs.';}).catch(e=>$('notice').textContent=e.message);}
  setInterval(poll,750);setInterval(clocks,100);
 }
 

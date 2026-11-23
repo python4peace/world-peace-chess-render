@@ -12,8 +12,10 @@ import chess.pgn
 from flask import Flask, abort, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 from clocks import GameClock
+from access_pass import initialize, authorize, complete
 
 app = Flask(__name__)
+initialize(app)
 app.config['MAX_CONTENT_LENGTH'] = 8192
 HOST_CODE = os.environ.get('HOST_CODE', '')
 if len(HOST_CODE) < 16:
@@ -147,9 +149,7 @@ def new():
             os.environ.get('ALLOW_PUBLIC_FRIEND_GAMES', 'false').lower() == 'true'
             and d.get('mode') == 'friend'
         )
-        supplied=d.get('host_code','')
-        if not public_friend and (not isinstance(supplied,str) or not secrets.compare_digest(supplied,HOST_CODE)):
-            abort(403,'Incorrect host code. Use the private HOST_CODE saved in Render Environment.')
+        authorization = authorize(app, d.get('host_code', ''), HOST_CODE, public=public_friend)
         mode=d.get('mode');control=d.get('control')
         if mode not in ('friend','ai','selfplay') or control not in CONTROLS:abort(400,'Choose a valid mode and time control.')
         if len(rooms)>=40:abort(429,'Room limit reached. Use existing rooms or restart the service after games finish.')
@@ -172,7 +172,7 @@ def new():
         rooms[rid]=g
         host_token=g['white_token'] if host_side=='w' else g['black_token']
         guest_token=(g['black_token'] if host_side=='w' else g['white_token']) if mode=='friend' else ''
-        return jsonify(room=rid,token=host_token,invite=guest_token)
+        return complete(app, authorization, jsonify(room=rid,token=host_token,invite=guest_token))
 
 @app.get('/api/room/<rid>')
 def room_state(rid):

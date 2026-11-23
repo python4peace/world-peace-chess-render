@@ -1,5 +1,6 @@
 import secrets, time
 import chess
+from access_pass import authorize, complete
 from flask import request, jsonify, abort, render_template
 
 def register_lessons(app, lock, host_code, attempts):
@@ -34,15 +35,14 @@ def register_lessons(app, lock, host_code, attempts):
             while attempts and now-attempts[0]>60:attempts.popleft()
             if len(attempts)>=30:abort(429,'Wait one minute before creating another room.')
             attempts.append(now)
-            supplied=d.get('host_code','')
-            if not isinstance(supplied,str) or not secrets.compare_digest(supplied,host_code):abort(403,'Incorrect host code.')
+            authorization = authorize(app, d.get('host_code', ''), host_code)
             for k,g in list(lessons.items()):
                 if now-g['created']>86400:lessons.pop(k,None)
             if len(lessons)>=20:abort(429,'Close an old lesson first.')
             rid=secrets.token_urlsafe(18)
             g=dict(board=chess.Board(),teacher=secrets.token_urlsafe(32),student=secrets.token_urlsafe(32),created=now,revision=0,note='Welcome! Select a piece to see legal moves. Teacher and student can practice either side.',moves=[],serial=0)
             lessons[rid]=g
-            return jsonify(room=rid,token=g['teacher'])
+            return complete(app, authorization, jsonify(room=rid,token=g['teacher']))
     @app.get('/api/lesson/<rid>')
     def lesson_state(rid):
         with lock:return jsonify(state(room(rid),request.headers.get('X-Player-Token','')))
