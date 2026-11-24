@@ -13,6 +13,7 @@ from flask import Flask, abort, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 from clocks import GameClock
 from access_pass import initialize, authorize, complete
+from child_levels import LEVELS, authorize_game, complete_game, choose_move
 
 app = Flask(__name__)
 initialize(app)
@@ -113,7 +114,7 @@ def payload(g, token=''):
                 phase=g['phase'],turn='w' if g['board'].turn else 'b',role=player(g,token),
                 result=g['result'],message=g['message'],control=g['control'],mode=g['mode'],
                 moves=g['moves'][:],engine_ready=engine_ok,revision=g['revision'],boot_id=BOOT_ID,
-                think_seconds=THINK_SECONDS,is_host=player(g,token)==g.get('host_side','w'))
+                think_seconds=THINK_SECONDS,difficulty=g.get('difficulty','strong'),level_name=LEVELS[g.get('difficulty','strong')][0],is_host=player(g,token)==g.get('host_side','w'))
 
 def commit_move(g,move):
     flag_check(g)
@@ -128,6 +129,7 @@ def commit_move(g,move):
     return True
 
 @app.get('/')
+@app.get('/kids')
 @app.get('/room/<rid>')
 def index(rid=None):return render_template('index.html')
 
@@ -149,8 +151,11 @@ def new():
             os.environ.get('ALLOW_PUBLIC_FRIEND_GAMES', 'false').lower() == 'true'
             and d.get('mode') == 'friend'
         )
-        authorization = authorize(app, d.get('host_code', ''), HOST_CODE, public=public_friend)
+        authorization = authorize_game(app, d.get('host_code', ''), HOST_CODE, public=public_friend, mode=d.get('mode'), difficulty=d.get('difficulty', 'strong'))
         mode=d.get('mode');control=d.get('control')
+        difficulty = d.get('difficulty', 'strong') if mode == 'ai' else 'strong'
+        if not isinstance(difficulty, str) or difficulty not in LEVELS:
+            abort(400, 'Choose a valid computer level.')
         if mode not in ('friend','ai','selfplay') or control not in CONTROLS:abort(400,'Choose a valid mode and time control.')
         if len(rooms)>=40:abort(429,'Room limit reached. Use existing rooms or restart the service after games finish.')
         if mode in ('ai','selfplay'):
@@ -167,12 +172,13 @@ def new():
                phase='waiting',result='*',message='Waiting for invited player to join' if mode=='friend' else 'Click Start when ready',
                white_token=secrets.token_urlsafe(32),black_token=secrets.token_urlsafe(32) if mode=='friend' else '',
                moves=[],created=now,revision=0,ai_pending=False)
+        g['difficulty']=difficulty
         g['host_side']=host_side
         g['guest_side']='b' if host_side=='w' else 'w'
         rooms[rid]=g
         host_token=g['white_token'] if host_side=='w' else g['black_token']
         guest_token=(g['black_token'] if host_side=='w' else g['white_token']) if mode=='friend' else ''
-        return complete(app, authorization, jsonify(room=rid,token=host_token,invite=guest_token))
+        return complete_game(app, authorization, jsonify(room=rid,token=host_token,invite=guest_token))
 
 @app.get('/api/room/<rid>')
 def room_state(rid):
@@ -236,7 +242,7 @@ def computer_move(rid,g):
                 expected_revision=g['revision']
                 side='w' if board.turn else 'b'
                 budget=min(THINK_SECONDS,max(.01,g['clock'].remaining[side]-.15))
-            result=engine.play(board,chess.engine.Limit(time=budget))
+            result=choose_move(engine, board, budget, g.get('difficulty', 'strong'))
         with lock:
             if rooms.get(rid) is not g:return
             flag_check(g)

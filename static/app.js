@@ -41,7 +41,7 @@ function accept(s){
  if(previous && previous.boot_id===s.boot_id && previous._room===rid && s.moves.length>previous.moves.length && window.wpcMoveSound)window.wpcMoveSound();
  s._room=rid;
  if(changed){game.load(s.fen);selected=null;drawBoard();}
- $('status').textContent=s.message+(s.result!=='*'?' — '+s.result:'')+' · '+s.control+' · '+(s.role==='spectator'?'Spectator':s.mode==='selfplay'?'You are the self-play host':s.role==='w'?'You are White':'You are Black');
+ $('status').textContent=s.message+(s.result!=='*'?' — '+s.result:'')+' · '+s.control+(s.mode==='ai'?' · '+s.level_name:'')+' · '+(s.role==='spectator'?'Spectator':s.mode==='selfplay'?'You are the self-play host':s.role==='w'?'You are White':'You are Black');
  $('resign').disabled=$('draw').disabled=s.phase!=='playing'||s.role==='spectator'||s.mode==='selfplay';
  $('start').hidden=watching||!(['ai','selfplay'].includes(s.mode)&&s.phase==='waiting'&&s.role==='w');
  $('stopSelfplay').hidden=watching||!(s.mode==='selfplay'&&s.phase==='playing'&&s.role==='w');
@@ -101,8 +101,8 @@ $('create').onclick=async()=>{
  if(state&&state.phase!=='ended'&&!confirm('The old game will remain open and its clock may continue. Create another game?'))return;
  busy=true;
  try{
-  const d=await api('/api/new','POST',{host_code:$('hostCode').value,mode:$('mode').value,control:$('control').value,color:$('hostColor').value});
-  rid=d.room;token=d.token;invite=d.invite;joinToken='';state=null;saveSeat();history.pushState(null,'','/room/'+rid);
+  const d=await api('/api/new','POST',{host_code:$('hostCode').value,mode:$('mode').value,control:$('control').value,color:$('hostColor').value,difficulty:$('difficulty').value});
+  rid=d.room;token=d.token;invite=d.invite;joinToken='';state=null;saveSeat();history.pushState(null,'','/room/'+rid+((location.pathname==='/kids'||new URLSearchParams(location.search).has('kids'))?'?kids=1':''));
   $('hostCode').value='';accept(await api('/api/room/'+rid));$('notice').textContent='';
  }catch(e){$('notice').textContent=e.message;}finally{busy=false;}
 };
