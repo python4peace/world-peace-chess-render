@@ -1,0 +1,8 @@
+LIFEHAVEN - FINAL PACKAGE
+Upload these 3 things to your GitHub repo (same level as your Dockerfile and render.yaml):
+  1. app.py
+  2. requirements.txt
+  3. phone_guardian  (the whole folder)
+Keep your existing Dockerfile, render.yaml, assets/, .gitignore and .dockerignore as they are.
+Then wait for Render to redeploy (or click Manual Deploy > Deploy latest commit).
+Optional Render environment variables: APP_PASSWORD, DB_PATH=/data/lifehaven.db (with a disk), ENABLE_EXTERNAL_TTS=true

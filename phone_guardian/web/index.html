@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102b25"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/style.css">
+<title>Peace Unity Phone Guardian</title></head><body>
+<header><div class="shield">✦</div><p class="eyebrow">PEACE UNITY PROJECT</p><h1>Phone Guardian</h1>
+<p class="sub">Security &amp; performance check · v2</p><span class="pill">LOCAL DASHBOARD · NOTHING LEAVES THIS DEVICE</span></header>
+<main>
+<section class="actions"><button id="scan">Run security &amp; performance scan</button><button id="clean" class="secondary">Clean Guardian temp files</button></section>
+<section class="actions"><button id="ads" class="secondary">🚫 Test ad &amp; tracker blocking</button><span></span></section>
+<pre id="adout"></pre>
+<label class="chk"><input type="checkbox" id="offline"> Skip network tests (offline mode)</label>
+<p id="status" role="status">Ready.</p>
+<section id="score" class="card" hidden></section>
+<section id="filters" hidden><button class="chip on" data-l="all">All</button><button class="chip" data-l="warning">Warnings</button><button class="chip" data-l="review">Review</button><button class="chip" data-l="info">Info</button></section>
+<section id="results" aria-live="polite"></section>
+<p><a id="dl" href="/api/report.html" hidden>⬇ Download HTML report</a></p>
+<section class="card"><h2>Link &amp; message checker</h2><p>Offline pattern check. It never opens the link.</p>
+<label for="url">Web address</label><input id="url" type="text" placeholder="example.com/login" autocomplete="off"><button id="urlbtn">Check link</button>
+<label for="txt">Or paste a suspicious text message</label><textarea id="txt" rows="4" placeholder="Paste message…"></textarea><button id="txtbtn">Check message</button>
+<pre id="chkout"></pre></section>
+<section class="card" id="hist" hidden><h2>Scan history</h2><div id="histbody"></div></section>
+<section class="card note"><h2>What this can and cannot do</h2>
+<p>It reads what your operating system lets an ordinary app see. It cannot identify a person, prove a phone is clean, or find every spyware/malware. iPhone/iPad do not allow this kind of scan — use Safety Check and App Privacy Report in Settings.</p>
+<p>Never share passwords, verification codes or banking PINs with anyone who contacts you.</p></section>
+</main><footer>Peace Unity Phone Guardian</footer><script src="/app.js"></script></body></html>
