@@ -17,7 +17,7 @@ _child_grants = {}
 def authorize_game(app, supplied, host_code, public=False, mode=None, difficulty='strong'):
     # Child grants never enter the host/teacher grant dictionary.
     if mode == 'ai':
-        child_code = os.environ.get('CHILD_PLAY_CODE', '')
+        child_code = os.environ.get('BEGINNER_PLAY_CODE', os.environ.get('CHILD_PLAY_CODE', ''))
         configured = 8 <= len(child_code) <= 64 and child_code != host_code
         key = request.cookies.get(CHILD_COOKIE, '')
         grant = _child_grants.get(key)
@@ -29,7 +29,7 @@ def authorize_game(app, supplied, host_code, public=False, mode=None, difficulty
         host_supplied = isinstance(supplied, str) and secrets.compare_digest(supplied, host_code)
         if not host_supplied and (valid_grant or child_supplied):
             if not isinstance(difficulty, str) or difficulty not in LEVELS or difficulty == 'strong':
-                abort(403, 'The child play code allows the four easier computer levels only.')
+                abort(403, 'The beginner play code allows the four easier computer levels only.')
             left = grant['left'] if valid_grant else 4
             return ('child', (key, left, not valid_grant, child_code))
     return ('host', authorize(app, supplied, host_code, public=public))

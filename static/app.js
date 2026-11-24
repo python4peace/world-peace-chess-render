@@ -102,7 +102,7 @@ $('create').onclick=async()=>{
  busy=true;
  try{
   const d=await api('/api/new','POST',{host_code:$('hostCode').value,mode:$('mode').value,control:$('control').value,color:$('hostColor').value,difficulty:$('difficulty').value});
-  rid=d.room;token=d.token;invite=d.invite;joinToken='';state=null;saveSeat();history.pushState(null,'','/room/'+rid+((location.pathname==='/kids'||new URLSearchParams(location.search).has('kids'))?'?kids=1':''));
+  rid=d.room;token=d.token;invite=d.invite;joinToken='';state=null;saveSeat();history.pushState(null,'','/room/'+rid+((['/beginner','/kids'].includes(location.pathname)||['beginner','kids'].some(key=>new URLSearchParams(location.search).has(key)))?'?beginner=1':''));
   $('hostCode').value='';accept(await api('/api/room/'+rid));$('notice').textContent='';
  }catch(e){$('notice').textContent=e.message;}finally{busy=false;}
 };

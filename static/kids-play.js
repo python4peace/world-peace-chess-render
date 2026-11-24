@@ -1,20 +1,23 @@
 "use strict";
 (()=>{
- const kid=location.pathname==='/kids'||new URLSearchParams(location.search).has('kids');
+ const kid=['/beginner','/kids'].includes(location.pathname)||new URLSearchParams(location.search).has('beginner')||new URLSearchParams(location.search).has('kids');
  const mode=document.getElementById('mode'),level=document.getElementById('difficulty');
  function update(){level.disabled=mode.value!=='ai';}
  mode.addEventListener('change',update);
  if(kid){
-   document.title='World Peace Chess — Let’s Play';
-   document.querySelector('h1').textContent='Let’s Play Chess';
-   document.querySelector('h1+p').textContent='Enter your play code, pick an easy level, and press Play chess.';
+   document.title='World Peace Chess — Beginner Play';
+   document.querySelector('h1').textContent='Beginner Play';
+   document.querySelector('h1+p').textContent='Enter your play code, choose a level, and press Play chess.';
+   const accessHelp=document.getElementById('accessHelp');
+   if(accessHelp)accessHelp.textContent='One code entry allows four new computer games at the four easier levels. Refreshing does not use another game. Enter the code again after four games or if access resets.';
+   document.querySelectorAll('a[href="/lesson"]').forEach(link=>{link.hidden=true;});
    mode.value='ai';
    for(const option of mode.options)if(option.value!=='ai')option.remove();
    mode.hidden=true;
    const color=document.getElementById('hostColor');color.disabled=true;color.hidden=true;
    const control=document.getElementById('control');control.value='10+5';
    const code=document.getElementById('hostCode');
-   code.placeholder='Your play code — leave blank after your first game';
+   code.placeholder='Your play code — enter again after four games';
    document.querySelector('label[for="hostCode"]').textContent='Your play code';
    const strong=level.querySelector('option[value="strong"]');if(strong)strong.remove();
    level.value='first_steps';

@@ -129,6 +129,7 @@ def commit_move(g,move):
     return True
 
 @app.get('/')
+@app.get('/beginner')
 @app.get('/kids')
 @app.get('/room/<rid>')
 def index(rid=None):return render_template('index.html')
